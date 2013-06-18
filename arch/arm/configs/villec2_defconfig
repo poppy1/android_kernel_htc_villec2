@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Linux/arm 3.0.81 Kernel Configuration
+# Linux/arm 3.0.82 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -563,9 +563,6 @@ CONFIG_HIGH_RES_TIMERS=y
 CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
 CONFIG_SMP=y
 CONFIG_SMP_ON_UP=y
-CONFIG_ARM_CPU_TOPOLOGY=y
-CONFIG_SCHED_MC=y
-# CONFIG_SCHED_SMT is not set
 CONFIG_HAVE_ARM_SCU=y
 # CONFIG_ARM_ARCH_TIMER is not set
 CONFIG_VMSPLIT_3G=y
