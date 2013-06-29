@@ -15,16 +15,18 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include <linux/earlysuspend.h>
 #include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/cpufreq.h>
 #include <linux/workqueue.h>
 #include <linux/completion.h>
@@ -42,17 +44,17 @@
 
 #define DEBUG 0
 
-#define MPDEC_TAG "[MPDEC]: "
-#define MSM_MPDEC_STARTDELAY 20000
-#define MSM_MPDEC_DELAY 130
-#define MSM_MPDEC_PAUSE 10000
-#define MSM_MPDEC_IDLE_FREQ 486000
+#define MPDEC_TAG                       "[MPDEC]: "
+#define MSM_MPDEC_STARTDELAY            20000
+#define MSM_MPDEC_DELAY                 130
+#define MSM_MPDEC_PAUSE                 10000
+#define MSM_MPDEC_IDLE_FREQ             486000
 #ifdef CONFIG_MSM_MPDEC_INPUTBOOST_CPUMIN
-#define MSM_MPDEC_BOOSTTIME 1000
-#define MSM_MPDEC_BOOSTFREQ_CPU0 918000
-#define MSM_MPDEC_BOOSTFREQ_CPU1 918000
-#define MSM_MPDEC_BOOSTFREQ_CPU2 702000
-#define MSM_MPDEC_BOOSTFREQ_CPU3 594000
+#define MSM_MPDEC_BOOSTTIME             1000
+#define MSM_MPDEC_BOOSTFREQ_CPU0        918000
+#define MSM_MPDEC_BOOSTFREQ_CPU1        918000
+#define MSM_MPDEC_BOOSTFREQ_CPU2        702000
+#define MSM_MPDEC_BOOSTFREQ_CPU3        594000
 #endif
 
 enum {
@@ -191,8 +193,8 @@ static void mpdec_cpu_up(int cpu) {
         per_cpu(msm_mpdec_cpudata, cpu).on_time = ktime_to_ms(ktime_get());
         per_cpu(msm_mpdec_cpudata, cpu).online = true;
         per_cpu(msm_mpdec_cpudata, cpu).times_cpu_hotplugged += 1;
-        pr_info(MPDEC_TAG"CPU[%d] off->on | Mask=[%d%d%d%d]\n",
-                cpu, cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3));
+        pr_info(MPDEC_TAG"CPU[%d] off->on | Mask=[%d%d]\n",
+                cpu, cpu_online(0), cpu_online(1));
         mutex_unlock(&per_cpu(msm_mpdec_cpudata, cpu).hotplug_mutex);
     }
 }
@@ -207,8 +209,8 @@ static void mpdec_cpu_down(int cpu) {
         per_cpu(msm_mpdec_cpudata, cpu).online = false;
         per_cpu(msm_mpdec_cpudata, cpu).on_time_total += on_time;
         per_cpu(msm_mpdec_cpudata, cpu).times_cpu_unplugged += 1;
-        pr_info(MPDEC_TAG"CPU[%d] on->off | Mask=[%d%d%d%d] | time online: %llu\n",
-                cpu, cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3), on_time);
+        pr_info(MPDEC_TAG"CPU[%d] on->off | Mask=[%d%d] | time online: %llu\n",
+                cpu, cpu_online(0), cpu_online(1), on_time);
         mutex_unlock(&per_cpu(msm_mpdec_cpudata, cpu).hotplug_mutex);
     }
 }
@@ -248,7 +250,7 @@ static int mp_decision(void) {
             if ((total_time >= TwTs_Threshold[index]) &&
                 (nr_cpu_online < msm_mpdec_tuners_ins.max_cpus)) {
                 new_state = MSM_MPDEC_UP;
-                if (get_slowest_cpu_rate() <= msm_mpdec_tuners_ins.idle_freq)
+                if (get_slowest_cpu_rate() <=  msm_mpdec_tuners_ins.idle_freq)
                     new_state = MSM_MPDEC_IDLE;
             }
         } else if ((nr_cpu_online > 1) && (rq_depth <= NwNs_Threshold[index+1])) {
@@ -272,8 +274,8 @@ static int mp_decision(void) {
 
     last_time = ktime_to_ms(ktime_get());
 #if DEBUG
-    pr_info(MPDEC_TAG"[DEBUG] rq: %u, new_state: %i | Mask=[%d%d%d%d]\n",
-            rq_depth, new_state, cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3));
+    pr_info(MPDEC_TAG"[DEBUG] rq: %u, new_state: %i | Mask=[%d%d]\n",
+            rq_depth, new_state, cpu_online(0), cpu_online(1));
 #endif
     return new_state;
 }
@@ -539,11 +541,11 @@ static const struct input_device_id mpdec_ids[] = {
 };
 
 static struct input_handler mpdec_input_handler = {
-    .event = mpdec_input_event,
-    .connect = mpdec_input_connect,
-    .disconnect = mpdec_input_disconnect,
-    .name = "mpdec_inputreq",
-    .id_table = mpdec_ids,
+    .event        = mpdec_input_event,
+    .connect      = mpdec_input_connect,
+    .disconnect   = mpdec_input_disconnect,
+    .name         = "mpdec_inputreq",
+    .id_table     = mpdec_ids,
 };
 #endif
 
@@ -599,8 +601,8 @@ static void msm_mpdec_late_resume(struct early_suspend *h) {
             }
         }
 
-        pr_info(MPDEC_TAG"Screen -> on. Activated mpdecision. | Mask=[%d%d%d%d]\n",
-                cpu_online(0), cpu_online(1), cpu_online(2), cpu_online(3));
+        pr_info(MPDEC_TAG"Screen -> on. Activated mpdecision. | Mask=[%d%d]\n",
+                cpu_online(0), cpu_online(1));
     } else {
         pr_info(MPDEC_TAG"Screen -> on\n");
     }
@@ -615,11 +617,11 @@ static struct early_suspend msm_mpdec_early_suspend_handler = {
 /**************************** SYSFS START ****************************/
 struct kobject *msm_mpdec_kobject;
 
-#define show_one(file_name, object) \
-static ssize_t show_##file_name \
-(struct kobject *kobj, struct attribute *attr, char *buf) \
-{ \
-return sprintf(buf, "%u\n", msm_mpdec_tuners_ins.object); \
+#define show_one(file_name, object)                    \
+static ssize_t show_##file_name                        \
+(struct kobject *kobj, struct attribute *attr, char *buf)               \
+{                                    \
+    return sprintf(buf, "%u\n", msm_mpdec_tuners_ins.object);    \
 }
 
 show_one(startdelay, startdelay);
@@ -633,11 +635,11 @@ show_one(boost_enabled, boost_enabled);
 show_one(boost_time, boost_time);
 #endif
 
-#define show_one_twts(file_name, arraypos) \
-static ssize_t show_##file_name \
-(struct kobject *kobj, struct attribute *attr, char *buf) \
-{ \
-return sprintf(buf, "%u\n", TwTs_Threshold[arraypos]); \
+#define show_one_twts(file_name, arraypos)                              \
+static ssize_t show_##file_name                                         \
+(struct kobject *kobj, struct attribute *attr, char *buf)               \
+{                                                                       \
+    return sprintf(buf, "%u\n", TwTs_Threshold[arraypos]);          \
 }
 show_one_twts(twts_threshold_0, 0);
 show_one_twts(twts_threshold_1, 1);
@@ -648,18 +650,18 @@ show_one_twts(twts_threshold_5, 5);
 show_one_twts(twts_threshold_6, 6);
 show_one_twts(twts_threshold_7, 7);
 
-#define store_one_twts(file_name, arraypos) \
-static ssize_t store_##file_name \
+#define store_one_twts(file_name, arraypos)                             \
+static ssize_t store_##file_name                                        \
 (struct kobject *a, struct attribute *b, const char *buf, size_t count) \
-{ \
-unsigned int input; \
-int ret; \
-ret = sscanf(buf, "%u", &input); \
-if (ret != 1) \
-return -EINVAL; \
-TwTs_Threshold[arraypos] = input; \
-return count; \
-} \
+{                                                                       \
+    unsigned int input;                                             \
+    int ret;                                                        \
+    ret = sscanf(buf, "%u", &input);                                \
+    if (ret != 1)                                                   \
+        return -EINVAL;                                         \
+    TwTs_Threshold[arraypos] = input;                               \
+    return count;                                                   \
+}                                                                       \
 define_one_global_rw(file_name);
 store_one_twts(twts_threshold_0, 0);
 store_one_twts(twts_threshold_1, 1);
@@ -670,11 +672,11 @@ store_one_twts(twts_threshold_5, 5);
 store_one_twts(twts_threshold_6, 6);
 store_one_twts(twts_threshold_7, 7);
 
-#define show_one_nwns(file_name, arraypos) \
-static ssize_t show_##file_name \
-(struct kobject *kobj, struct attribute *attr, char *buf) \
-{ \
-return sprintf(buf, "%u\n", NwNs_Threshold[arraypos]); \
+#define show_one_nwns(file_name, arraypos)                              \
+static ssize_t show_##file_name                                         \
+(struct kobject *kobj, struct attribute *attr, char *buf)               \
+{                                                                       \
+    return sprintf(buf, "%u\n", NwNs_Threshold[arraypos]);          \
 }
 show_one_nwns(nwns_threshold_0, 0);
 show_one_nwns(nwns_threshold_1, 1);
@@ -685,18 +687,18 @@ show_one_nwns(nwns_threshold_5, 5);
 show_one_nwns(nwns_threshold_6, 6);
 show_one_nwns(nwns_threshold_7, 7);
 
-#define store_one_nwns(file_name, arraypos) \
-static ssize_t store_##file_name \
+#define store_one_nwns(file_name, arraypos)                             \
+static ssize_t store_##file_name                                        \
 (struct kobject *a, struct attribute *b, const char *buf, size_t count) \
-{ \
-unsigned int input; \
-int ret; \
-ret = sscanf(buf, "%u", &input); \
-if (ret != 1) \
-return -EINVAL; \
-NwNs_Threshold[arraypos] = input; \
-return count; \
-} \
+{                                                                       \
+    unsigned int input;                                             \
+    int ret;                                                        \
+    ret = sscanf(buf, "%u", &input);                                \
+    if (ret != 1)                                                   \
+        return -EINVAL;                                         \
+    NwNs_Threshold[arraypos] = input;                               \
+    return count;                                                   \
+}                                                                       \
 define_one_global_rw(file_name);
 store_one_nwns(nwns_threshold_0, 0);
 store_one_nwns(nwns_threshold_1, 1);
@@ -1181,4 +1183,3 @@ void msm_mpdec_exit(void) {
 #endif
     destroy_workqueue(msm_mpdec_workq);
 }
-
