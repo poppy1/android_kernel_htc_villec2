@@ -1735,7 +1735,6 @@ int msm_rpc_call_reply(struct msm_rpc_endpoint *ept, uint32_t proc,
 }
 EXPORT_SYMBOL(msm_rpc_call_reply);
 
-
 static inline int ept_packet_available(struct msm_rpc_endpoint *ept)
 {
 	unsigned long flags;
