@@ -1,0 +1,26 @@
+--- net/ipv6/ip6mr.c
++++ net/ipv6/ip6mr.c
+@@ -256,10 +256,12 @@
+ {
+ 	struct mr6_table *mrt, *next;
+ 
++	rtnl_lock();
+ 	list_for_each_entry_safe(mrt, next, &net->ipv6.mr6_tables, list) {
+ 		list_del(&mrt->list);
+ 		ip6mr_free_table(mrt);
+ 	}
++	rtnl_unlock();
+ 	fib_rules_unregister(net->ipv6.mr6_rules_ops);
+ }
+ #else
+@@ -286,7 +288,10 @@
+ 
+ static void __net_exit ip6mr_rules_exit(struct net *net)
+ {
++	rtnl_lock();
+ 	ip6mr_free_table(net->ipv6.mrt6);
++	net->ipv6.mrt6 = NULL;
++	rtnl_unlock();
+ }
+ #endif
+ 
