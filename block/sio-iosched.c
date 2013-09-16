@@ -23,15 +23,15 @@
 enum { ASYNC, SYNC };
 
 /* Tunables */
-static const int sync_read_expire = HZ / 2;	/* max time before a sync read is submitted. */
+static const int sync_read_expire  = HZ / 2;	/* max time before a sync read is submitted. */
 static const int sync_write_expire = 2 * HZ;	/* max time before a sync write is submitted. */
 
-static const int async_read_expire = 4 * HZ;	/* ditto for async, these limits are SOFT! */
+static const int async_read_expire  =  4 * HZ;	/* ditto for async, these limits are SOFT! */
 static const int async_write_expire = 16 * HZ;	/* ditto for async, these limits are SOFT! */
 
-static const int writes_starved = 2;	/* max times reads can starve a write */
-static const int fifo_batch = 8;	/* # of sequential requests treated as one
-by the above parameters. For throughput. */
+static const int writes_starved = 1;		/* max times reads can starve a write */
+static const int fifo_batch     = 1;		/* # of sequential requests treated as one
+						   by the above parameters. For throughput. */
 
 /* Elevator data */
 struct sio_data {
@@ -50,7 +50,7 @@ struct sio_data {
 
 static void
 sio_merged_requests(struct request_queue *q, struct request *rq,
-		struct request *next)
+		    struct request *next)
 {
 	/*
 	 * If next expires before rq, assign its expire time to rq
@@ -179,7 +179,7 @@ sio_dispatch_request(struct sio_data *sd, struct request *rq)
 	if (rq_data_dir(rq))
 		sd->starved = 0;
 	else
-	sd->starved++;
+		sd->starved++;
 }
 
 static int
@@ -302,14 +302,14 @@ sio_var_store(int *var, const char *page, size_t count)
 	return count;
 }
 
-#define SHOW_FUNCTION(__FUNC, __VAR, __CONV) \
-static ssize_t __FUNC(struct elevator_queue *e, char *page) \
-{ \
-	struct sio_data *sd = e->elevator_data; \
-	int __data = __VAR; \
-	if (__CONV) \
-		__data = jiffies_to_msecs(__data); \
-	return sio_var_show(__data, (page)); \
+#define SHOW_FUNCTION(__FUNC, __VAR, __CONV)				\
+static ssize_t __FUNC(struct elevator_queue *e, char *page)		\
+{									\
+	struct sio_data *sd = e->elevator_data;			\
+	int __data = __VAR;						\
+	if (__CONV)							\
+		__data = jiffies_to_msecs(__data);			\
+	return sio_var_show(__data, (page));			\
 }
 SHOW_FUNCTION(sio_sync_read_expire_show, sd->fifo_expire[SYNC][READ], 1);
 SHOW_FUNCTION(sio_sync_write_expire_show, sd->fifo_expire[SYNC][WRITE], 1);
@@ -319,21 +319,21 @@ SHOW_FUNCTION(sio_fifo_batch_show, sd->fifo_batch, 0);
 SHOW_FUNCTION(sio_writes_starved_show, sd->writes_starved, 0);
 #undef SHOW_FUNCTION
 
-#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV) \
-static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count) \
-{ \
-	struct sio_data *sd = e->elevator_data; \
-	int __data; \
-	int ret = sio_var_store(&__data, (page), count); \
-	if (__data < (MIN)) \
-		__data = (MIN); \
-	else if (__data > (MAX)) \
-		__data = (MAX); \
-	if (__CONV) \
-		*(__PTR) = msecs_to_jiffies(__data); \
-	else \
-		*(__PTR) = __data; \
-	return ret; \
+#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	\
+{									\
+	struct sio_data *sd = e->elevator_data;			\
+	int __data;							\
+	int ret = sio_var_store(&__data, (page), count);		\
+	if (__data < (MIN))						\
+		__data = (MIN);						\
+	else if (__data > (MAX))					\
+		__data = (MAX);						\
+	if (__CONV)							\
+		*(__PTR) = msecs_to_jiffies(__data);			\
+	else								\
+		*(__PTR) = __data;					\
+	return ret;							\
 }
 STORE_FUNCTION(sio_sync_read_expire_store, &sd->fifo_expire[SYNC][READ], 0, INT_MAX, 1);
 STORE_FUNCTION(sio_sync_write_expire_store, &sd->fifo_expire[SYNC][WRITE], 0, INT_MAX, 1);
@@ -345,7 +345,7 @@ STORE_FUNCTION(sio_writes_starved_store, &sd->writes_starved, 0, INT_MAX, 0);
 
 #define DD_ATTR(name) \
 	__ATTR(name, S_IRUGO|S_IWUSR, sio_##name##_show, \
-sio_##name##_store)
+				      sio_##name##_store)
 
 static struct elv_fs_entry sio_attrs[] = {
 	DD_ATTR(sync_read_expire),
@@ -359,17 +359,17 @@ static struct elv_fs_entry sio_attrs[] = {
 
 static struct elevator_type iosched_sio = {
 	.ops = {
-		.elevator_merge_req_fn	= sio_merged_requests,
-		.elevator_dispatch_fn	= sio_dispatch_requests,
-		.elevator_add_req_fn	= sio_add_request,
+		.elevator_merge_req_fn		= sio_merged_requests,
+		.elevator_dispatch_fn		= sio_dispatch_requests,
+		.elevator_add_req_fn		= sio_add_request,
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,38)
 		.elevator_queue_empty_fn	= sio_queue_empty,
 #endif
-		.elevator_former_req_fn	= sio_former_request,
-		.elevator_latter_req_fn	= sio_latter_request,
-		.elevator_init_fn	= sio_init_queue,
-		.elevator_exit_fn	= sio_exit_queue,
-},
+		.elevator_former_req_fn		= sio_former_request,
+		.elevator_latter_req_fn		= sio_latter_request,
+		.elevator_init_fn		= sio_init_queue,
+		.elevator_exit_fn		= sio_exit_queue,
+	},
 
 	.elevator_attrs = sio_attrs,
 	.elevator_name = "sio",

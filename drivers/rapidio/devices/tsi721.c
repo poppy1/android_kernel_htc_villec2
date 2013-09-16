@@ -441,7 +441,7 @@ static void tsi721_db_dpc(struct work_struct *work)
 		}
 
 		wr_ptr = ioread32(priv->regs +
-				TSI721_IDQ_WP(IDB_QUEUE)) % IDB_QSIZE;
+				  TSI721_IDQ_WP(IDB_QUEUE)) % IDB_QSIZE;
 	}
 
 	iowrite32(rd_ptr & (IDB_QSIZE - 1),

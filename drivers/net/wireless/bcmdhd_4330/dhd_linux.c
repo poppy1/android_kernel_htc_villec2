@@ -3349,7 +3349,7 @@ static struct net_device_ops dhd_ops_virt = {
 };
 #endif 
 
-extern unsigned int system_rev;
+extern int system_rev;
 #define XA		0
 #define XB		1
 #define XC		2

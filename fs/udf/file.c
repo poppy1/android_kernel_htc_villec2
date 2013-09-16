@@ -82,9 +82,9 @@ static int udf_adinicb_writepage(struct page *page,
 }
 
 static int udf_adinicb_write_begin(struct file *file,
-		       struct address_space *mapping, loff_t pos,
-		       unsigned len, unsigned flags, struct page **pagep,
-		       void **fsdata)
+			struct address_space *mapping, loff_t pos,
+			unsigned len, unsigned flags, struct page **pagep,
+			void **fsdata)
 {
 	struct page *page;
 
@@ -121,8 +121,8 @@ static int udf_adinicb_write_end(struct file *file,
 const struct address_space_operations udf_adinicb_aops = {
 	.readpage	= udf_adinicb_readpage,
 	.writepage	= udf_adinicb_writepage,
-	.write_begin = udf_adinicb_write_begin,
-	.write_end = udf_adinicb_write_end,
+	.write_begin	= udf_adinicb_write_begin,
+	.write_end	= udf_adinicb_write_end,
 };
 
 static ssize_t udf_file_aio_write(struct kiocb *iocb, const struct iovec *iov,

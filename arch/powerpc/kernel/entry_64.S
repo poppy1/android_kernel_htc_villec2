@@ -373,11 +373,11 @@ _GLOBAL(ret_from_fork)
 	li	r3,0
 	b	syscall_exit
 
-	.section ".toc","aw"
+	.section	".toc","aw"
 DSCR_DEFAULT:
 	.tc dscr_default[TC],dscr_default
 
-	.section ".text"
+	.section	".text"
 
 /*
  * This routine switches between two different tasks.  The process
@@ -526,21 +526,21 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
 #endif /* CONFIG_ALTIVEC */
 #ifdef CONFIG_PPC64
 BEGIN_FTR_SECTION
-	lwz     r6,THREAD_DSCR_INHERIT(r4)
-	ld      r7,DSCR_DEFAULT@toc(2)
+	lwz	r6,THREAD_DSCR_INHERIT(r4)
+	ld	r7,DSCR_DEFAULT@toc(2)
 	ld	r0,THREAD_DSCR(r4)
-	cmpwi   r6,0
-	bne     1f
-	ld      r0,0(r7)
-1: 	cmpd    r0,r25
-	beq     2f
+	cmpwi	r6,0
+	bne	1f
+	ld	r0,0(r7)
+1:	cmpd	r0,r25
+	beq	2f
 	mtspr	SPRN_DSCR,r0
-2:	
+2:
 END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
 #endif
 
-	ld      r6,_CCR(r1)
-	mtcrf   0xFF,r6
+	ld	r6,_CCR(r1)
+	mtcrf	0xFF,r6
 
 	/* r3-r13 are destroyed -- Cort */
 	REST_8GPRS(14, r1)

@@ -68,6 +68,12 @@ struct idmap_legacy_upcalldata {
 	struct idmap *idmap;
 };
 
+/**
+ * nfs_fattr_init_names - initialise the nfs_fattr owner_name/group_name fields
+ * @fattr: fully initialised struct nfs_fattr
+ * @owner_name: owner name string cache
+ * @group_name: group name string cache
+ */
 void nfs_fattr_init_names(struct nfs_fattr *fattr,
 		struct nfs4_string *owner_name,
 		struct nfs4_string *group_name)
@@ -367,7 +373,7 @@ static void idmap_pipe_destroy_msg(struct rpc_pipe_msg *);
 static const struct rpc_pipe_ops idmap_upcall_ops = {
 	.upcall		= rpc_pipe_generic_upcall,
 	.downcall	= idmap_pipe_downcall,
-	.release_pipe = idmap_release_pipe,
+	.release_pipe	= idmap_release_pipe,
 	.destroy_msg	= idmap_pipe_destroy_msg,
 };
 
@@ -741,7 +747,7 @@ idmap_pipe_destroy_msg(struct rpc_pipe_msg *msg)
 		idmap->idmap_key_cons = NULL;
 		complete_request_key(cons, msg->errno);
 	}
-	
+	/* Free memory allocated in nfs_idmap_legacy_upcall() */
 	kfree(data);
 }
 

@@ -507,7 +507,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
 			sense_deferred = scsi_sense_is_deferred(&sshdr);
 	}
 
-	if (req->cmd_type == REQ_TYPE_BLOCK_PC) { 
+	if (req->cmd_type == REQ_TYPE_BLOCK_PC) { /* SG_IO ioctl from block level */
 		if (result) {
 			if (sense_valid && req->sense) {
 				int len = 8 + cmd->sense_buffer[7];

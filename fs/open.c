@@ -796,7 +796,7 @@ static inline int build_open_flags(int flags, umode_t mode, struct open_flags *o
 	else
 		op->mode = 0;
 
-	/* Must never be set by userspace */
+	
 	flags &= ~FMODE_NONOTIFY;
 
 	if (flags & __O_SYNC)

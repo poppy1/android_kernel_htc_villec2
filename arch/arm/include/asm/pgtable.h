@@ -47,6 +47,21 @@ extern void __pgd_error(const char *file, int line, pgd_t);
 
 #define FIRST_USER_ADDRESS	PAGE_SIZE
 
+/*
+ * Use TASK_SIZE as the ceiling argument for free_pgtables() and
+ * free_pgd_range() to avoid freeing the modules pmd when LPAE is enabled (pmd
+ * page shared between user and kernel).
+ */
+#ifdef CONFIG_ARM_LPAE
+#define USER_PGTABLES_CEILING	TASK_SIZE
+#endif
+
+/*
+ * The pgprot_* and protection_map entries will be fixed up in runtime
+ * to include the cachable and bufferable bits based on memory policy,
+ * as well as any architecture dependent bits like global/ASID and SMP
+ * shared mapping bits.
+ */
 #define _L_PTE_DEFAULT	L_PTE_PRESENT | L_PTE_YOUNG
 
 extern pgprot_t		pgprot_user;
@@ -176,13 +191,13 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 
 #define pte_clear(mm,addr,ptep)	set_pte_ext(ptep, __pte(0), 0)
 
-#define pte_none(pte) (!pte_val(pte))
-#define pte_present(pte) (pte_val(pte) & L_PTE_PRESENT)
-#define pte_write(pte) (!(pte_val(pte) & L_PTE_RDONLY))
-#define pte_dirty(pte) (pte_val(pte) & L_PTE_DIRTY)
-#define pte_young(pte) (pte_val(pte) & L_PTE_YOUNG)
-#define pte_exec(pte) (!(pte_val(pte) & L_PTE_XN))
-#define pte_special(pte) (0)
+#define pte_none(pte)		(!pte_val(pte))
+#define pte_present(pte)	(pte_val(pte) & L_PTE_PRESENT)
+#define pte_write(pte)		(!(pte_val(pte) & L_PTE_RDONLY))
+#define pte_dirty(pte)		(pte_val(pte) & L_PTE_DIRTY)
+#define pte_young(pte)		(pte_val(pte) & L_PTE_YOUNG)
+#define pte_exec(pte)		(!(pte_val(pte) & L_PTE_XN))
+#define pte_special(pte)	(0)
 
 #define pte_present_user(pte) \
 	((pte_val(pte) & (L_PTE_PRESENT | L_PTE_USER)) == \
@@ -205,6 +220,7 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 		__sync_icache_dcache(pteval);
 		ext |= PTE_EXT_NG;
 	}
+
 	set_pte_ext(ptep, pteval, ext);
 }
 
@@ -227,6 +243,17 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 	return pte;
 }
 
+/*
+ * Encode and decode a swap entry.  Swap entries are stored in the Linux
+ * page tables as follows:
+ *
+ *   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+ *   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+ *   <--------------- offset ----------------------> < type -> 0 0 0
+ *
+ * This gives us up to 31 swap files and 64GB per swap file.  Note that
+ * the offset field is always non-zero.
+ */
 #define __SWP_TYPE_SHIFT	3
 #define __SWP_TYPE_BITS		5
 #define __SWP_TYPE_MASK		((1 << __SWP_TYPE_BITS) - 1)

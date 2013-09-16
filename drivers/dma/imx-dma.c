@@ -473,8 +473,10 @@ static int imxdma_xfer_desc(struct imxdma_desc *d)
 			slot = i;
 			break;
 		}
-		if (slot < 0)
+		if (slot < 0) {
+			spin_unlock_irqrestore(&imxdma->lock, flags);
 			return -EBUSY;
+		}
 
 		imxdma->slots_2d[slot].xsr = d->x;
 		imxdma->slots_2d[slot].ysr = d->y;
@@ -1114,7 +1116,7 @@ static int __exit imxdma_remove(struct platform_device *pdev)
 		free_irq(MX1_DMA_ERR, NULL);
 	}
 
-	kfree(imxdma);
+        kfree(imxdma);
 
         return 0;
 }
