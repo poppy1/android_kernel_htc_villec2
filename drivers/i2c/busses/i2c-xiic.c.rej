@@ -1,0 +1,11 @@
+--- drivers/i2c/busses/i2c-xiic.c
++++ drivers/i2c/busses/i2c-xiic.c
+@@ -425,7 +424,7 @@
+ 			xiic_wakeup(i2c, STATE_ERROR);
+ 
+ 	} else if (pend & (XIIC_INTR_TX_EMPTY_MASK | XIIC_INTR_TX_HALF_MASK)) {
+-		/* Transmit register/FIFO is empty or ½ empty */
++		/* Transmit register/FIFO is empty or \BD empty */
+ 
+ 		clr = pend &
+ 			(XIIC_INTR_TX_EMPTY_MASK | XIIC_INTR_TX_HALF_MASK);

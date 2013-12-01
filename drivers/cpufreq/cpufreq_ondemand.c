@@ -32,14 +32,14 @@
  */
 
 #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
-#define DEF_FREQUENCY_UP_THRESHOLD		(90)
+#define DEF_FREQUENCY_UP_THRESHOLD		(80)
 #define DEF_SAMPLING_DOWN_FACTOR		(1)
 #define MAX_SAMPLING_DOWN_FACTOR		(100000)
 #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
-#define MICRO_FREQUENCY_UP_THRESHOLD		(90)
+#define MICRO_FREQUENCY_UP_THRESHOLD		(95)
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
-#define MIN_FREQUENCY_UP_THRESHOLD		(10)
-#define MAX_FREQUENCY_UP_THRESHOLD		(98)
+#define MIN_FREQUENCY_UP_THRESHOLD		(11)
+#define MAX_FREQUENCY_UP_THRESHOLD		(100)
 #define MIN_FREQUENCY_DOWN_DIFFERENTIAL		(1)
 #define DBS_INPUT_EVENT_MIN_FREQ		(810000)
 
@@ -815,16 +815,15 @@ static void dbs_refresh_callback(struct work_struct *unused)
 	struct cpu_dbs_info_s *this_dbs_info;
 	unsigned int cpu = smp_processor_id();
 
-	get_online_cpus();
-
 	if (lock_policy_rwsem_write(cpu) < 0)
-		goto bail_acq_sema_failed;
+		return;
 
 	this_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
 	policy = this_dbs_info->cur_policy;
 	if (!policy) {
 		/* CPU not using ondemand governor */
-		goto bail_incorrect_governor;
+		unlock_policy_rwsem_write(cpu);
+		return;
 	}
 
 	if (policy->cur < DBS_INPUT_EVENT_MIN_FREQ) {
@@ -836,13 +835,7 @@ static void dbs_refresh_callback(struct work_struct *unused)
 		this_dbs_info->prev_cpu_idle = get_cpu_idle_time(cpu,
 				&this_dbs_info->prev_cpu_wall);
 	}
-
-bail_incorrect_governor:
 	unlock_policy_rwsem_write(cpu);
-
-bail_acq_sema_failed:
-	put_online_cpus();
-	return;
 }
 
 static unsigned int enable_dbs_input_event = 1;
@@ -859,12 +852,7 @@ static void dbs_input_event(struct input_handle *handle, unsigned int type,
 
 	if (enable_dbs_input_event) {
 		for_each_online_cpu(i) {
-			/* Only allow queue work when cpufreq initialization has finished */
-			if (per_cpu(cpufreq_init_done, i))
-				queue_work_on(i, input_wq, &per_cpu(dbs_refresh_work, i));
-			else
-				pr_err("%s: cpu %d initialization not done! Skip queue work...\n",
-					__func__, i);
+			queue_work_on(i, input_wq, &per_cpu(dbs_refresh_work, i));
 		}
 	}
 }
@@ -1010,9 +998,6 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 		mutex_lock(&dbs_mutex);
 		mutex_destroy(&this_dbs_info->timer_mutex);
 		dbs_enable--;
-		/* If device is being removed, policy is no longer
-		 * valid. */
-		this_dbs_info->cur_policy = NULL;
 		if (!cpu)
 			input_unregister_handler(&dbs_input_handler);
 		mutex_unlock(&dbs_mutex);

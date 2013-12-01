@@ -197,7 +197,7 @@ static unsigned int villec2_wifi_status(struct device *dev)
 
 static unsigned int villec2_wifislot_type = MMC_TYPE_SDIO_WIFI;
 static struct mmc_platform_data villec2_wifi_data = {
-	.ocr_mask               = MMC_VDD_28_29,
+	.ocr_mask               = MMC_VDD_35_36,
 	.status                 = villec2_wifi_status,
 	.register_status_notify = villec2_wifi_status_register,
 	.embedded_sdio          = &villec2_wifi_emb_data,

@@ -2,7 +2,6 @@ obj-y += io.o dma.o memory.o timer.o
 obj-y += clock.o clock-voter.o clock-dummy.o
 obj-y += subsystem_map.o
 obj-$(CONFIG_CPU_FREQ_MSM) += cpufreq.o
-obj-$(CONFIG_MSM_MPDEC) += msm_mpdecision.o
 obj-$(CONFIG_DEBUG_FS) += nohlt.o clock-debug.o
 obj-$(CONFIG_KEXEC) += msm_kexec.o
 
@@ -175,7 +174,7 @@ obj-$(CONFIG_MSM7KV2_AUDIO) += htc_acoustic_7x30.o htc_acdb_7x30.o
 obj-$(CONFIG_MSM7KV2_1X_AUDIO) += htc_acoustic_7x30.o htc_acdb_7x30.o
 
 obj-$(CONFIG_MSM_QDSP6) += qdsp6/
-obj-$(CONFIG_MSM8X60_AUDIO) += qdsp6v2_1x/
+obj-$(CONFIG_MSM8X60_AUDIO) += qdsp6v3/
 obj-$(CONFIG_MSM_AUDIO_QDSP6) += qdsp6v2/
 obj-$(CONFIG_MSM_HW3D) += hw3d.o
 ifdef CONFIG_PM
@@ -420,7 +419,6 @@ else
 obj-$(CONFIG_MACH_RIDER) += board-rider-mmc.o board-rider-wifi.o
 endif
 
-obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 obj-$(CONFIG_MACH_VILLEC2) += board-villec2.o
 obj-$(CONFIG_MACH_VILLEC2) += board-villec2-keypad.o
 obj-$(CONFIG_MACH_VILLEC2) += board-villec2-audio.o

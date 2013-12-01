@@ -1,0 +1,11 @@
+--- arch/s390/kernel/time.c
++++ arch/s390/kernel/time.c
+@@ -63,7 +63,7 @@
+  */
+ unsigned long long notrace __kprobes sched_clock(void)
+ {
+-	return (get_clock_monotonic() * 125) >> 9;
++	return tod_to_ns(get_clock_monotonic());
+ }
+ 
+ /*

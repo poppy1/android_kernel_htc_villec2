@@ -85,7 +85,7 @@ struct pv_lazy_ops {
 	/* Set deferred update mode, used for batching operations. */
 	void (*enter)(void);
 	void (*leave)(void);
-        void (*flush)(void);
+	void (*flush)(void);
 };
 
 struct pv_time_ops {

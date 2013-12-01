@@ -1,0 +1,23 @@
+--- arch/x86/include/asm/system.h
++++ arch/x86/include/asm/system.h
+@@ -93,10 +93,6 @@
+ 			"memory");					\
+ } while (0)
+ 
+-/*
+- * disable hlt during certain critical i/o operations
+- */
+-#define HAVE_DISABLE_HLT
+ #else
+ 
+ /* frame pointer must be last for get_wchan */
+@@ -392,9 +388,6 @@
+ 
+ #define nop() asm volatile ("nop")
+ 
+-void disable_hlt(void);
+-void enable_hlt(void);
+-
+ void cpu_idle_wait(void);
+ 
+ extern unsigned long arch_align_stack(unsigned long sp);
